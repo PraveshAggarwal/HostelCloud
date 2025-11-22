@@ -28,4 +28,4 @@ const laundrySchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-export default mongoose.model("Laundry", laundrySchema);
+export default mongoose.model("Laundary", laundrySchema);

@@ -3,7 +3,7 @@ import Complaint from "../models/compliant.js";
 // Create new complaint
 export const createComplaint = async (req, res) => {
   try {
-    const { title, description, image } = req.body;
+    const { title, description } = req.body;
     const studentId = req.user.id;
 
     const complaint = new Complaint({

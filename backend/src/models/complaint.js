@@ -20,11 +20,6 @@ const complaintSchema = new mongoose.Schema(
       trim: true,
     },
 
-    image: {
-      type: String,
-      default: null,
-    },
-
     status: {
       type: String,
       enum: ["open", "in-progress", "resolved"],

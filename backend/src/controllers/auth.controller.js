@@ -1,22 +1,39 @@
 import jwt from "jsonwebtoken";
-import student from "../models/student";
+import bcrypt from "bcryptjs";
+import Student from "../models/student.js";
+import User from "../models/User.js";
 import dotenv from "dotenv";
 dotenv.config();
 
-export async function signup(req, res) {
-  const { email, password, fullname } = req.body;
+// Register new user
+export const register = async (req, res) => {
   try {
-    if (!email || !password || !fullname) {
-      return res.status(400).json({ message: "Please fill all the fields" });
-    }
+    const {
+      name,
+      email,
+      password,
+      rollNo,
+      role,
+      phone,
+      roomNo,
+      batch,
+      parentName,
+      parentContact,
+      motherName,
+      motherContact,
+    } = req.body;
 
+    if (!rollNo || !name || !email || !phone || !roomNo) {
+      return res
+        .status(400)
+        .json({ message: "Please fill all required fields" });
+    }
     if (password.length < 6) {
       return res
         .status(400)
         .json({ message: "Password must be at least 6 characters" });
     }
 
-    // to check the email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return res.status(400).json({ message: "Invalid email format" });
@@ -24,67 +41,105 @@ export async function signup(req, res) {
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res
-        .status(400)
-        .json({ message: "Email already exists, please use a different" });
+      return res.status(400).json({ message: "Email already exists" });
     }
 
-    const newUser = await User.create({
-      fullname,
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const userRole = role || "student";
+
+    const user = new User({
+      name,
       email,
-      password,
+      password: hashedPassword,
+      rollNo: userRole === "admin" ? null : rollNo,
+      roomNo: userRole === "admin" ? null : roomNo,
+      role: userRole,
     });
 
-    const token = jwt.sign(
-      { userId: newUser._id },
-      process.env.JWT_SECRET_KEY,
-      {
-        expiresIn: "7d",
-      }
-    );
-    res.cookie("jwt", token, {
-      httpOnly: true, // prevents XSS attacks
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict", // prevent CSRF attack
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    await user.save();
+
+    // Create student record only if role is student
+    if (userRole === "student") {
+      const student = new Student({
+        rollNo,
+        name,
+        email,
+        phone,
+        roomNo,
+        batch,
+        parentName,
+        parentContact,
+        motherName,
+        motherContact,
+      });
+      await student.save();
+    }
+
+    res.status(201).json({
+      message: `${
+        userRole === "admin" ? "Admin" : "Student"
+      } registered successfully`,
     });
-    res.status(201).json({ success: true, user: newUser });
   } catch (error) {
-    console.log("Error in signup controller", error);
+    console.log("Error in register controller:", error);
     res.status(500).json({ message: "Server Error" });
   }
-}
+};
 
-// REGISTER
-router.post("/register", async (req, res) => {
-  const { name, email, password, rollNo, role } = req.body;
-  const hashedPass = await bcrypt.hash(password, 10);
+// Login user
+export const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
 
-  const user = new User({ name, email, password: hashedPass, rollNo, role });
-  await user.save();
+    const identifier = (email || "").toString().trim();
 
-  res.json({ message: "User registered" });
-});
+    if (!identifier || !password) {
+      return res.status(400).json({ message: "Please fill all fields" });
+    }
 
-// LOGIN
-router.post("/login", async (req, res) => {
-  const { email, password } = req.body;
-  const user = await User.findOne({ email });
-  if (!user) return res.status(400).json({ msg: "Invalid credentials" });
+    // Support login by email (case-insensitive) or by roll number
+    let user;
+    if (identifier.includes("@")) {
+      user = await User.findOne({ email: identifier.toLowerCase() });
+    } else {
+      user = await User.findOne({ rollNo: identifier });
+    }
+    if (!user) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
 
-  const isMatch = await bcrypt.compare(password, user.password);
-  if (!isMatch) return res.status(400).json({ msg: "Invalid credentials" });
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
 
-  const token = jwt.sign({ id: user._id, role: user.role }, "secretkey", {
-    expiresIn: "1h",
-  });
-  res.json({ token, user: { id: user._id, name: user.name, role: user.role } });
-});
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET_KEY,
+      { expiresIn: "7d" }
+    );
 
+    res.status(200).json({
+      success: true,
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        rollNo: user.rollNo,
+      },
+    });
+  } catch (error) {
+    console.log("Error in login controller:", error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
+// Get all students (admin only)
 export const getAllStudents = async (req, res) => {
   try {
-    const students = await student.find().select("-password");
-
+    const students = await Student.find();
     res.status(200).json({
       success: true,
       count: students.length,
@@ -98,5 +153,3 @@ export const getAllStudents = async (req, res) => {
     });
   }
 };
-
-export default router;

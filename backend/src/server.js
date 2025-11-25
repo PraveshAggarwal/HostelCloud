@@ -6,11 +6,11 @@ import cookieParser from "cookie-parser";
 // Routes
 import authRoutes from "./routes/auth.js";
 import studentRoutes from "./routes/studentAuth.js";
-import attendanceRoutes from "./routes/attendance.js";
-import complaintRoutes from "./routes/complaint.js";
-import leaveRoutes from "./routes/leave.js";
-import laundryRoutes from "./routes/laundry.js";
-import noticeRoutes from "./routes/notice.js";
+import attendanceRoutes from "./routes/attendanceAuth.js";
+import complaintRoutes from "./routes/complaintAuth.js";
+import leaveRoutes from "./routes/leaveAuth.js";
+import laundaryRoutes from "./routes/laundaryAuth.js";
+import noticeRoutes from "./routes/noticeAuth.js";
 
 import { connectDB } from "./lib/db.js";
 
@@ -33,7 +33,7 @@ app.use("/api/students", studentRoutes);
 app.use("/api/attendance", attendanceRoutes);
 app.use("/api/complaints", complaintRoutes);
 app.use("/api/leaves", leaveRoutes);
-app.use("/api/laundry", laundryRoutes);
+app.use("/api/laundry", laundaryRoutes);
 app.use("/api/notices", noticeRoutes);
 
 app.listen(PORT, () => {

@@ -1,17 +1,48 @@
 import { useState } from "react";
 import { House } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useLogin } from "../hooks/useAuth"; // ✔ React Query Login Hook
+
 export default function LoginPage() {
-  const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [error, setError] = useState("");
+
+  const navigate = useNavigate();
+
+  // React Query Login Hook
+  const { login, isPending } = useLogin();
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log({ email, password, rememberMe, isAdmin });
-    // Add your login logic here
+    setError("");
+
+    // Call the React Query mutation
+    login(
+      { email, password },
+      {
+        onSuccess: (data) => {
+          // EXPECTED DATA FROM BACKEND:
+          // { success: true, user: { role: "admin" or "student" } }
+
+          if (!data || !data.user) {
+            setError("Invalid server response");
+            return;
+          }
+
+          // Redirect based on role
+          if (data.user.role === "admin") {
+            navigate("/admin");
+          } else {
+            navigate("/student");
+          }
+        },
+
+        onError: (err) => {
+          setError(err?.response?.data?.message || "Login failed");
+        },
+      }
+    );
   };
 
   return (
@@ -24,116 +55,71 @@ export default function LoginPage() {
     >
       {/* Login Card */}
       <div className="bg-slate-700 rounded-3xl p-8 w-full max-w-md shadow-2xl">
-        {/* Logo and Title */}
+        {/* Logo */}
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
-            <div className="text-5xl">
-              <House size={50} className="text-red-500" />
-            </div>
+            <House size={50} className="text-red-500" />
           </div>
           <h1 className="text-white text-3xl font-bold">
             HOSTEL <span className="text-orange-400">CLOUD</span>
           </h1>
         </div>
 
-        {/* Welcome Text */}
         <h2 className="text-white text-4xl font-bold text-center mb-6">
           Welcome
         </h2>
 
-        {/* Login/Register Tabs */}
+        {/* Tabs */}
         <div className="flex gap-4 mb-6">
-          <button
-            onClick={() => setIsLogin(true)}
-            className={`flex-1 py-3 rounded-full font-semibold transition-all ${
-              isLogin ? "bg-orange-500 text-white" : "bg-white text-orange-500"
-            }`}
-          >
+          <button className="flex-1 py-3 rounded-full bg-orange-500 text-white font-semibold">
             Login
           </button>
+
           <Link
             to="/signup"
-            onClick={() => setIsLogin(false)}
-            className={`flex-1 py-3 rounded-full font-semibold ${
-              !isLogin
-                ? "bg-orange-500 text-white"
-                : "bg-white text-orange-500 text-center"
-            }`}
+            className="flex-1 py-3 rounded-full bg-white text-orange-500 font-semibold text-center"
           >
             Register
           </Link>
         </div>
 
+        {/* Error Message */}
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            {error}
+          </div>
+        )}
+
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Email/Roll Number Input */}
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Email / Roll Number"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="input w-full bg-white text-gray-700 rounded-xl pl-4 pr-12 py-3 focus:outline-none focus:ring-2 focus:ring-orange-400"
-            />
-          </div>
+          {/* Email Input */}
+          <input
+            type="text"
+            placeholder="Email / Roll Number"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="input w-full bg-white text-gray-700 rounded-xl pl-4 pr-12 py-3 focus:outline-none focus:ring-2 focus:ring-orange-400"
+            required
+          />
 
           {/* Password Input */}
-          <div className="relative">
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="input w-full bg-white text-gray-700 rounded-xl pl-4 pr-12 py-3 focus:outline-none focus:ring-2 focus:ring-orange-400"
-            />
-          </div>
-
-          {/* Remember Me & Forgot Password */}
-          {/* <div className="flex items-center justify-between text-white text-sm">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-                className="toggle toggle-sm bg-white border-white"
-              />
-              <span>Remember Me</span>
-            </label>
-            <a href="#" className="hover:text-orange-400 transition-colors">
-              Forgot Password?
-            </a>
-          </div> */}
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="input w-full bg-white text-gray-700 rounded-xl pl-4 pr-12 py-3 focus:outline-none focus:ring-2 focus:ring-orange-400"
+            required
+          />
 
           {/* Sign In Button */}
           <button
             type="submit"
-            className="btn w-full bg-orange-500 hover:bg-orange-600 text-white font-bold text-lg rounded-full py-3 border-none"
+            disabled={isPending}
+            className="btn w-full bg-orange-500 hover:bg-orange-600 text-white font-bold text-lg rounded-full py-3 border-none disabled:opacity-50"
           >
-            SIGN IN
+            {isPending ? "SIGNING IN..." : "SIGN IN"}
           </button>
-
-          {/* Student/Admin Toggle */}
-          <div className="flex items-center justify-center gap-3 text-white">
-            <span>Student </span>
-            <input
-              type="checkbox"
-              checked={isAdmin}
-              onChange={(e) => setIsAdmin(e.target.checked)}
-              className="toggle toggle-lg bg-white border-white"
-            />{" "}
-            <span>Admin</span>
-          </div>
-
-          {/* Sign Up Link */}
-          {/* <div className="text-center text-white text-sm">
-            Don't have an account?{" "}
-            <a
-              href="#"
-              className="text-orange-400 hover:text-orange-300 font-semibold"
-            >
-              Sign Up
-            </a>
-          </div> */}
         </form>
       </div>
 

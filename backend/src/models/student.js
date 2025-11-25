@@ -41,11 +41,6 @@ const studentSchema = new mongoose.Schema(
       trim: true,
     },
 
-    photo: {
-      type: String,
-      default: null,
-    },
-
     parentName: {
       type: String,
       required: true,

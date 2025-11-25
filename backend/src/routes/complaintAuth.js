@@ -5,7 +5,7 @@ import {
   getComplaintsByStudent,
   updateComplaintStatus,
   deleteComplaint,
-} from "../controllers/complaint.controller.js";
+} from "../controllers/complaintcontroller.js";
 import { protect, adminOnly } from "../middleware/auth.middleware.js";
 
 const router = express.Router();

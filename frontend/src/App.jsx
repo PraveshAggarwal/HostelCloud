@@ -1,17 +1,16 @@
 import { Route, Routes } from "react-router-dom";
+import { RegisterPage } from "./pages/RegisterPage";
 import LoginPage from "./pages/LoginPage";
-import SignupPage from "./pages/SignupPage";
-import StudentDashboard from "./pages/studentPage";
-import AdminDashboard from "./pages/adminPage";
-
+import AttendanceManagement from "./components/AttendanceManagement";
+import StudentAttendance from "./components/StudentAttendance";
 function App() {
   return (
     <div>
       <Routes>
-        <Route path="/" element={<LoginPage />} />
-        <Route path="/signup" element={<SignupPage />} />
-        <Route path="/d" element={<StudentDashboard />} />
-        <Route path="/a" element={<AdminDashboard />} />
+        <Route path="/" element={<RegisterPage />} />
+        <Route path="/l" element={<LoginPage />} />
+        <Route path="/a" element={<AttendanceManagement />} />
+        <Route path="/d" element={<StudentAttendance />} />
       </Routes>
     </div>
   );

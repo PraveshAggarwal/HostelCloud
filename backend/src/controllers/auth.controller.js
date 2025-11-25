@@ -23,10 +23,17 @@ export const register = async (req, res) => {
       motherContact,
     } = req.body;
 
-    if (!rollNo || !name || !email || !phone || !roomNo) {
+    if (!name || !email || !password) {
       return res
         .status(400)
         .json({ message: "Please fill all required fields" });
+    }
+
+    // Additional validation for students
+    if (role === "student" && (!rollNo || !phone || !roomNo)) {
+      return res
+        .status(400)
+        .json({ message: "Please fill all student required fields" });
     }
     if (password.length < 6) {
       return res
@@ -132,6 +139,17 @@ export const login = async (req, res) => {
     });
   } catch (error) {
     console.log("Error in login controller:", error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
+// Logout user
+export const logout = async (req, res) => {
+  try {
+    res.clearCookie("jwt");
+    res.status(200).json({ message: "Logged out successfully" });
+  } catch (error) {
+    console.log("Error in logout controller:", error);
     res.status(500).json({ message: "Server Error" });
   }
 };

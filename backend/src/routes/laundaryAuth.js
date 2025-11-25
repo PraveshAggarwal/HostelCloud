@@ -5,7 +5,7 @@ import {
   getLaundaryByStudent,
   updateLaundaryStatus,
   getAvailableSlots,
-} from "../controllers/laundary.controller.js";
+} from "../controllers/laundarycontroller.js";
 import { protect, adminOnly } from "../middleware/auth.middleware.js";
 
 const router = express.Router();

@@ -5,16 +5,16 @@ import Student from "../models/student.js";
 export const bookLaundarySlot = async (req, res) => {
   try {
     const { slot, date } = req.body;
-    
-    // Find student by email from user
+
+    // Find student by email from the logged-in user
     const student = await Student.findOne({ email: req.user.email });
     if (!student) {
       return res.status(404).json({
         success: false,
-        message: "Student profile not found",
+        message: "Student profile not found. Please contact admin.",
       });
     }
-    
+
     const studentId = student._id;
 
     // Check if slot is already booked for that date
@@ -39,6 +39,9 @@ export const bookLaundarySlot = async (req, res) => {
 
     await booking.save();
 
+    // Populate student details so the response contains the name/room immediately
+    await booking.populate("studentId", "name rollNo roomNo");
+
     res.status(201).json({
       success: true,
       message: "Laundary slot booked successfully",
@@ -53,11 +56,11 @@ export const bookLaundarySlot = async (req, res) => {
   }
 };
 
-// Get all Laundary bookings (admin)
+// Get all Laundary bookings (admin) - FIXED: Ensures student details are populated
 export const getAllLaundaryBookings = async (req, res) => {
   try {
     const bookings = await Laundary.find()
-      .populate("studentId", "name rollNo roomNo")
+      .populate("studentId", "name rollNo roomNo") // This pulls the name and roomNo from the Student model
       .sort({ date: -1 });
 
     res.status(200).json({
@@ -83,8 +86,10 @@ export const getLaundaryByStudent = async (req, res) => {
         message: "Student profile not found",
       });
     }
-    
-    const bookings = await Laundary.find({ studentId: student._id }).sort({ date: -1 });
+
+    const bookings = await Laundary.find({ studentId: student._id })
+      .populate("studentId", "name rollNo roomNo")
+      .sort({ date: -1 });
 
     res.status(200).json({
       success: true,
@@ -99,7 +104,7 @@ export const getLaundaryByStudent = async (req, res) => {
   }
 };
 
-// Update Laundary status
+// Update Laundary status (admin)
 export const updateLaundaryStatus = async (req, res) => {
   try {
     const { id } = req.params;

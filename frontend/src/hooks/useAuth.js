@@ -45,7 +45,9 @@ export const useLogout = () => {
   const { mutate, isPending } = useMutation({
     mutationFn: logout,
     onSuccess: () => {
-      queryClient.removeQueries({ queryKey: ["authUser"] });
+      localStorage.removeItem("token");
+      queryClient.setQueryData(["authUser"], null);
+      window.location.href = "/";
     },
   });
 

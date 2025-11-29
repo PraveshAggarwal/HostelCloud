@@ -125,6 +125,12 @@ export const getMyLaundryBookings = async () => {
   return response.data;
 };
 
+// Added this function
+export const updateLaundaryStatus = async (id, status) => {
+  const response = await axiosInstance.put(`/laundry/${id}/status`, { status });
+  return response.data;
+};
+
 export const getAvailableSlots = async (date) => {
   const response = await axiosInstance.get(`/laundry/available/${date}`);
   return response.data;

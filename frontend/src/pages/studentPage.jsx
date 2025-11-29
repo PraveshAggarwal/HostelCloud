@@ -82,10 +82,6 @@ export default function StudentDashboard() {
     attendance: calculateAttendancePercentage(),
     daysPresent: attendance.filter((a) => a.status === "present").length,
     totalDays: attendance.length,
-    photo:
-      studentData?.photo ||
-      user?.photo ||
-      "https://randomuser.me/api/portraits/women/44.jpg",
   };
 
   const menuItems = [
@@ -144,11 +140,6 @@ export default function StudentDashboard() {
           {/* Header */}
           <div className="bg-white p-4 flex items-center justify-between shadow-sm">
             <div className="flex items-center gap-3">
-              <img
-                src={displayData.photo}
-                alt="Profile"
-                className="w-12 h-12 rounded-full border-2 border-orange-400"
-              />
               <div>
                 <h2 className="text-gray-800 font-semibold">
                   Welcome Back, {displayData.name}!

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getLaundryBookings } from "../lib/api";
+import { getLaundryBookings, updateLaundaryStatus } from "../lib/api";
 
 const LaundaryManagement = () => {
   const [bookings, setBookings] = useState([]);
@@ -17,6 +17,16 @@ const LaundaryManagement = () => {
       console.error("Error fetching laundry bookings:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleStatusUpdate = async (id, status) => {
+    try {
+      await updateLaundaryStatus(id, status);
+      fetchBookings(); // Refresh list after update
+    } catch (error) {
+      console.error("Error updating status:", error);
+      alert("Failed to update status");
     }
   };
 
@@ -47,6 +57,9 @@ const LaundaryManagement = () => {
               <th className="text-left py-3 px-4 text-gray-600 font-semibold">
                 Status
               </th>
+              <th className="text-left py-3 px-4 text-gray-600 font-semibold">
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -56,8 +69,11 @@ const LaundaryManagement = () => {
                 className="border-b border-gray-100 hover:bg-gray-50"
               >
                 <td className="py-3 px-4">
-                  <div className="text-gray-700">
+                  <div className="text-gray-700 font-medium">
                     {booking.studentId?.name || "Unknown"}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {booking.studentId?.rollNo || ""}
                   </div>
                 </td>
                 <td className="py-3 px-4">
@@ -84,6 +100,18 @@ const LaundaryManagement = () => {
                     {booking.status.charAt(0).toUpperCase() +
                       booking.status.slice(1)}
                   </span>
+                </td>
+                <td className="py-3 px-4">
+                  {booking.status === "booked" && (
+                    <button
+                      onClick={() =>
+                        handleStatusUpdate(booking._id, "collected")
+                      }
+                      className="btn btn-sm bg-green-500 hover:bg-green-600 text-white border-none"
+                    >
+                      Mark Collected
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}

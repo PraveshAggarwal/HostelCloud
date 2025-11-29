@@ -17,7 +17,6 @@ export default function StudentProfile() {
     parentContact: "",
     motherName: "",
     motherContact: "",
-    photo: "",
   });
 
   useEffect(() => {
@@ -47,7 +46,6 @@ export default function StudentProfile() {
           parentContact: currentStudent.parentContact || "",
           motherName: currentStudent.motherName || "",
           motherContact: currentStudent.motherContact || "",
-          photo: currentStudent.photo || "",
         });
       }
     } catch (error) {
@@ -82,7 +80,6 @@ export default function StudentProfile() {
       parentContact: studentData?.parentContact || "",
       motherName: studentData?.motherName || "",
       motherContact: studentData?.motherContact || "",
-      photo: studentData?.photo || "",
     });
     setEditing(false);
   };
@@ -117,36 +114,6 @@ export default function StudentProfile() {
             </button>
           </div>
         )}
-      </div>
-
-      {/* Profile Photo Section */}
-      <div className="flex justify-center mb-6">
-        <div className="relative">
-          <img
-            src={
-              editing
-                ? formData.photo ||
-                  "https://randomuser.me/api/portraits/men/32.jpg"
-                : studentData?.photo ||
-                  "https://randomuser.me/api/portraits/men/32.jpg"
-            }
-            alt="Profile"
-            className="w-24 h-24 rounded-full border-4 border-orange-400 object-cover"
-          />
-          {editing && (
-            <div className="mt-2">
-              <input
-                type="url"
-                placeholder="Photo URL"
-                value={formData.photo}
-                onChange={(e) =>
-                  setFormData({ ...formData, photo: e.target.value })
-                }
-                className="input w-full border border-gray-300 rounded px-3 py-2 text-sm"
-              />
-            </div>
-          )}
-        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

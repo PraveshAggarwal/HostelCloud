@@ -9,7 +9,7 @@ import {
 } from "../lib/api";
 
 export default function NotificationSystem() {
-  const { user } = useAuthUser();
+  const { data: user } = useAuthUser(); // Ensure consistent user access
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -26,40 +26,49 @@ export default function NotificationSystem() {
     try {
       // ADMIN
       if (user.role === "admin") {
-        const [complaints, leaves] = await Promise.all([
+        const [complaintsRes, leavesRes] = await Promise.all([
           getComplaints(),
           getLeaveRequests(),
         ]);
 
+        // Extract the data array from the response object
+        const complaints = complaintsRes.data || [];
+        const leaves = leavesRes.data || [];
+
         const newNotifications = [
-          ...(complaints
-            ?.filter((c) => c.status === "open")
-            ?.map((c) => ({
+          ...complaints
+            .filter((c) => c.status === "open")
+            .map((c) => ({
               id: `complaint-${c._id}`,
               type: "complaint",
               title: "New Complaint",
-              message: `${c.studentId?.name || "Student"} submitted: ${
+              // Handle missing student name gracefully
+              message: `${c.studentId?.name || "Unknown Student"} submitted: ${
                 c.title
               }`,
               time: new Date(c.createdAt),
               read: false,
-            })) || []),
+            })),
 
-          ...(leaves
-            ?.filter((l) => l.status === "pending")
-            ?.map((l) => ({
+          ...leaves
+            .filter((l) => l.status === "pending")
+            .map((l) => ({
               id: `leave-${l._id}`,
               type: "leave",
               title: "Leave Request",
+              // Handle missing student name gracefully
               message: `${
-                l.studentId?.name || "Student"
+                l.studentId?.name || "Unknown Student"
               } requested leave from ${new Date(
                 l.fromDate
               ).toLocaleDateString()}`,
               time: new Date(l.createdAt),
               read: false,
-            })) || []),
+            })),
         ];
+
+        // Sort by time (newest first)
+        newNotifications.sort((a, b) => b.time - a.time);
 
         setNotifications(newNotifications.slice(0, 10));
         setUnreadCount(newNotifications.length);
@@ -67,44 +76,56 @@ export default function NotificationSystem() {
 
       // STUDENT
       else {
-        const [myComplaints, myLeaves, notices] = await Promise.all([
+        const [myComplaintsRes, myLeavesRes, notices] = await Promise.all([
           getMyComplaints(),
           getMyLeaves(),
-          getRecentNotices(),
+          getRecentNotices(), // This API usually returns the array directly in your api.js setup
         ]);
 
+        // Extract the data array from the response object
+        const myComplaints = myComplaintsRes.data || [];
+        const myLeaves = myLeavesRes.data || [];
+        // getRecentNotices typically returns the data directly based on your api.js logic,
+        // but let's be safe. If it's an array, use it; otherwise check for .data
+        const noticeList = Array.isArray(notices)
+          ? notices
+          : notices?.data || [];
+
         const newNotifications = [
-          ...(myComplaints
-            ?.filter((c) => c.status !== "open")
-            ?.map((c) => ({
+          ...myComplaints
+            .filter((c) => c.status !== "open")
+            .map((c) => ({
               id: `complaint-${c._id}`,
               type: "complaint",
               title: "Complaint Update",
               message: `Your complaint "${c.title}" is now ${c.status}`,
               time: new Date(c.updatedAt),
               read: false,
-            })) || []),
+            })),
 
-          ...(myLeaves
-            ?.filter((l) => l.status !== "pending")
-            ?.map((l) => ({
+          ...myLeaves
+            .filter((l) => l.status !== "pending")
+            .map((l) => ({
               id: `leave-${l._id}`,
               type: "leave",
               title: "Leave Update",
               message: `Your leave request has been ${l.status}`,
               time: new Date(l.updatedAt),
               read: false,
-            })) || []),
+            })),
 
-          ...(notices?.slice(0, 3)?.map((n) => ({
+          ...noticeList.slice(0, 3).map((n) => ({
             id: `notice-${n._id}`,
             type: "notice",
             title: "New Notice",
             message: n.title,
             time: new Date(n.createdAt),
             read: false,
-          })) || []),
+          })),
         ];
+
+        // Sort by time (newest first)
+        newNotifications.sort((a, b) => b.time - a.time);
 
         setNotifications(newNotifications.slice(0, 10));
         setUnreadCount(newNotifications.length);
@@ -126,7 +147,7 @@ export default function NotificationSystem() {
       case "complaint":
         return "🔧";
       case "leave":
-        return "📅";
+        return "📝";
       case "notice":
         return "📢";
       default:

@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { getMyAttendance, getMyLeaves, applyLeave } from "../lib/api";
-import { useAuthUser } from "../hooks/useAuth"; // ✔ NEW
+import { useAuthUser } from "../hooks/useAuth";
 
 export default function StudentAttendance() {
-  const { data: user } = useAuthUser(); // ✔ Logged in user
+  const { data: user } = useAuthUser();
   const [attendance, setAttendance] = useState([]);
   const [leaveRequests, setLeaveRequests] = useState([]);
   const [loading, setLoading] = useState(true);

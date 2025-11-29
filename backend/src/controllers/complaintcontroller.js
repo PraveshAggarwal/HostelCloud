@@ -1,10 +1,20 @@
 import Complaint from "../models/complaint.js";
+import Student from "../models/student.js";
 
 // Create new complaint
 export const createComplaint = async (req, res) => {
   try {
     const { title, description } = req.body;
-    const studentId = req.user.id;
+    
+    const student = await Student.findOne({ email: req.user.email });
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student profile not found",
+      });
+    }
+    
+    const studentId = student._id;
 
     const complaint = new Complaint({
       studentId,
@@ -51,8 +61,15 @@ export const getAllComplaints = async (req, res) => {
 // Get complaints by student
 export const getComplaintsByStudent = async (req, res) => {
   try {
-    const studentId = req.user.id;
-    const complaints = await Complaint.find({ studentId }).sort({
+    const student = await Student.findOne({ email: req.user.email });
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student profile not found",
+      });
+    }
+    
+    const complaints = await Complaint.find({ studentId: student._id }).sort({
       createdAt: -1,
     });
 

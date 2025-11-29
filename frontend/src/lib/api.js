@@ -3,7 +3,7 @@ import { axiosInstance } from "./axios";
 export const login = async (credentials) => {
   const response = await axiosInstance.post("/auth/login", credentials);
   if (response.data.token) {
-    localStorage.setItem('token', response.data.token);
+    localStorage.setItem("token", response.data.token);
   }
   return response.data;
 };
@@ -142,7 +142,7 @@ export const getNotices = async () => {
 
 export const getRecentNotices = async () => {
   const response = await axiosInstance.get("/notices/recent");
-  return response.data;
+  return response.data.data || response.data;
 };
 
 export const updateNotice = async (id, noticeData) => {

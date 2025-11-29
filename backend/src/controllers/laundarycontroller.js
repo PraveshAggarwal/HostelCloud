@@ -1,10 +1,21 @@
 import Laundary from "../models/laundary.js";
+import Student from "../models/student.js";
 
 // Book Laundary slot
 export const bookLaundarySlot = async (req, res) => {
   try {
     const { slot, date } = req.body;
-    const studentId = req.user.id;
+    
+    // Find student by email from user
+    const student = await Student.findOne({ email: req.user.email });
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student profile not found",
+      });
+    }
+    
+    const studentId = student._id;
 
     // Check if slot is already booked for that date
     const existingBooking = await Laundary.findOne({
@@ -20,18 +31,18 @@ export const bookLaundarySlot = async (req, res) => {
       });
     }
 
-    const Laundary = new Laundary({
+    const booking = new Laundary({
       studentId,
       slot,
       date: new Date(date),
     });
 
-    await Laundary.save();
+    await booking.save();
 
     res.status(201).json({
       success: true,
       message: "Laundary slot booked successfully",
-      data: Laundary,
+      data: booking,
     });
   } catch (error) {
     console.error("Error booking Laundary slot:", error);
@@ -65,8 +76,15 @@ export const getAllLaundaryBookings = async (req, res) => {
 // Get Laundary bookings by student
 export const getLaundaryByStudent = async (req, res) => {
   try {
-    const studentId = req.user.id;
-    const bookings = await Laundary.find({ studentId }).sort({ date: -1 });
+    const student = await Student.findOne({ email: req.user.email });
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student profile not found",
+      });
+    }
+    
+    const bookings = await Laundary.find({ studentId: student._id }).sort({ date: -1 });
 
     res.status(200).json({
       success: true,
@@ -87,13 +105,13 @@ export const updateLaundaryStatus = async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
 
-    const Laundary = await Laundary.findByIdAndUpdate(
+    const booking = await Laundary.findByIdAndUpdate(
       id,
       { status },
       { new: true }
-    ).populate("studentId", "name rollNo");
+    ).populate("studentId", "name rollNo roomNo");
 
-    if (!Laundary) {
+    if (!booking) {
       return res.status(404).json({
         success: false,
         message: "Laundary booking not found",
@@ -103,7 +121,7 @@ export const updateLaundaryStatus = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Laundary status updated",
-      data: Laundary,
+      data: booking,
     });
   } catch (error) {
     console.error("Error updating Laundary status:", error);

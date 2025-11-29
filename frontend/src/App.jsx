@@ -1,18 +1,86 @@
-import { Route, Routes } from "react-router-dom";
-import { RegisterPage } from "./pages/RegisterPage";
+import { Route, Routes, Navigate } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useAuthUser } from "./hooks/useAuth";
 import LoginPage from "./pages/LoginPage";
-import AttendanceManagement from "./components/AttendanceManagement";
-import StudentAttendance from "./components/StudentAttendance";
+import { RegisterPage } from "./pages/RegisterPage";
+import StudentDashboard from "./pages/StudentPage";
+import AdminDashboard from "./pages/adminPage";
+
+const queryClient = new QueryClient();
+
+const ProtectedRoute = ({ children, adminOnly = false }) => {
+  const { data: authUser, isLoading } = useAuthUser();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        Loading...
+      </div>
+    );
+  }
+
+  if (!authUser) {
+    return <Navigate to="/" replace />;
+  }
+
+  if (adminOnly && authUser.role !== "admin") {
+    return <Navigate to="/student" replace />;
+  }
+
+  return children;
+};
+
+const AppRoutes = () => {
+  const { data: authUser } = useAuthUser();
+
+  return (
+    <Routes>
+      {/* Login */}
+      <Route
+        path="/"
+        element={
+          authUser ? (
+            <Navigate
+              to={authUser.role === "admin" ? "/admin" : "/student"}
+              replace
+            />
+          ) : (
+            <LoginPage />
+          )
+        }
+      />
+
+      {/* Signup */}
+      <Route path="/signup" element={<RegisterPage />} />
+
+      {/* Student */}
+      <Route
+        path="/student"
+        element={
+          <ProtectedRoute>
+            <StudentDashboard />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Admin */}
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute adminOnly>
+            <AdminDashboard />
+          </ProtectedRoute>
+        }
+      />
+    </Routes>
+  );
+};
+
 function App() {
   return (
-    <div>
-      <Routes>
-        <Route path="/" element={<RegisterPage />} />
-        <Route path="/l" element={<LoginPage />} />
-        <Route path="/a" element={<AttendanceManagement />} />
-        <Route path="/d" element={<StudentAttendance />} />
-      </Routes>
-    </div>
+    <QueryClientProvider client={queryClient}>
+      <AppRoutes />
+    </QueryClientProvider>
   );
 }
 

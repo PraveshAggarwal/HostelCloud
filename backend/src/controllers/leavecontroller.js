@@ -1,10 +1,20 @@
 import Leave from "../models/leave.js";
+import Student from "../models/student.js";
 
 // Apply for leave
 export const applyLeave = async (req, res) => {
   try {
     const { fromDate, toDate, reason } = req.body;
-    const studentId = req.user.id;
+    
+    const student = await Student.findOne({ email: req.user.email });
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student profile not found",
+      });
+    }
+    
+    const studentId = student._id;
 
     const leave = new Leave({
       studentId,
@@ -52,8 +62,15 @@ export const getAllLeaveRequests = async (req, res) => {
 // Get leave requests by student
 export const getLeavesByStudent = async (req, res) => {
   try {
-    const studentId = req.user.id;
-    const leaves = await Leave.find({ studentId }).sort({ createdAt: -1 });
+    const student = await Student.findOne({ email: req.user.email });
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student profile not found",
+      });
+    }
+    
+    const leaves = await Leave.find({ studentId: student._id }).sort({ createdAt: -1 });
 
     res.status(200).json({
       success: true,

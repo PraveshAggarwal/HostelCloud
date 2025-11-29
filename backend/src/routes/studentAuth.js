@@ -13,7 +13,7 @@ const router = express.Router();
 router.post("/", protect, adminOnly, createStudent);
 router.get("/", protect, getAllStudents);
 router.get("/:rollNo", protect, getStudentByRollNo);
-router.put("/:id", protect, adminOnly, updateStudent);
+router.put("/:id", protect, updateStudent);
 router.delete("/:id", protect, adminOnly, deleteStudent);
 
 export default router;

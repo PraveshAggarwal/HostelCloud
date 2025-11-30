@@ -17,6 +17,7 @@ import { connectDB } from "./lib/db.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+const __dirname = path.resolve();
 
 // Middleware
 app.use(

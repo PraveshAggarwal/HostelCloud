@@ -26,7 +26,10 @@ const PORT = process.env.PORT || 5000;
 // );
 
 const corsOptions = {
-  origin: ["http://localhost:5173", "https://hostelcloud-1.onrender.com"],
+  origin: [
+    "http://localhost:5173",
+    "https://hostelcloud-1-frontend.onrender.com",
+  ],
   credentials: true,
 };
 

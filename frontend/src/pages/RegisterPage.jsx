@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { House } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 import { useRegister } from "../hooks/useAuth";
 
 export const RegisterPage = () => {
@@ -23,9 +24,7 @@ export const RegisterPage = () => {
   const navigate = useNavigate();
 
   // React Query register hook
-  const { register, isPending, error: registerError } = useRegister();
-
-  const [success, setSuccess] = useState("");
+  const { register, isPending } = useRegister();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -38,8 +37,13 @@ export const RegisterPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (formData.password.length < 6) {
+      toast.error("Password must be at least 6 characters long");
+      return;
+    }
+
     if (formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match");
+      toast.error("Passwords do not match");
       return;
     }
 
@@ -50,11 +54,7 @@ export const RegisterPage = () => {
     // Call React Query mutation
     register(payload, {
       onSuccess: () => {
-        setSuccess("Registration successful! Redirecting...");
         setTimeout(() => navigate("/"), 1500);
-      },
-      onError: () => {
-        alert("Registration failed!");
       },
     });
   };
@@ -82,19 +82,7 @@ export const RegisterPage = () => {
           Create Account
         </h2>
 
-        {/* Error */}
-        {registerError && (
-          <div className="bg-red-100 text-red-700 px-4 py-3 rounded mb-4">
-            {registerError.message || "Registration failed"}
-          </div>
-        )}
 
-        {/* Success */}
-        {success && (
-          <div className="bg-green-100 text-green-700 px-4 py-3 rounded mb-4">
-            {success}
-          </div>
-        )}
 
         {/* Form */}
         <form className="space-y-4" onSubmit={handleSubmit}>

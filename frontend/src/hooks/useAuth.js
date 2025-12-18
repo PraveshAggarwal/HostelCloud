@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 import { login, register, getAuthUser, logout } from "../lib/api";
 
 // Get logged-in user
@@ -18,6 +19,10 @@ export const useLogin = () => {
     mutationFn: login,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["authUser"] });
+      toast.success("Login successful!");
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || "Login failed. Please check your credentials.");
     },
   });
 
@@ -32,6 +37,10 @@ export const useRegister = () => {
     mutationFn: register,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["authUser"] });
+      toast.success("Registration successful!");
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || "Registration failed. Please try again.");
     },
   });
 
@@ -47,7 +56,10 @@ export const useLogout = () => {
     onSuccess: () => {
       localStorage.removeItem("token");
       queryClient.setQueryData(["authUser"], null);
-      window.location.href = "/";
+      toast.success("Logged out successfully!");
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 1000);
     },
   });
 

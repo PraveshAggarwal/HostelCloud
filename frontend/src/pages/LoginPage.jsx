@@ -1,12 +1,11 @@
 import { useState } from "react";
 import { House } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { useLogin } from "../hooks/useAuth"; // ✔ React Query Login Hook
+import { useLogin } from "../hooks/useAuth";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
 
   const navigate = useNavigate();
 
@@ -15,18 +14,13 @@ export default function LoginPage() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setError("");
 
     // Call the React Query mutation
     login(
       { email, password },
       {
         onSuccess: (data) => {
-          // EXPECTED DATA FROM BACKEND:
-          // { success: true, user: { role: "admin" or "student" } }
-
           if (!data || !data.user) {
-            setError("Invalid server response");
             return;
           }
 
@@ -36,10 +30,6 @@ export default function LoginPage() {
           } else {
             navigate("/student");
           }
-        },
-
-        onError: (err) => {
-          setError(err?.response?.data?.message || "Login failed");
         },
       }
     );
@@ -82,13 +72,6 @@ export default function LoginPage() {
             Register
           </Link>
         </div>
-
-        {/* Error Message */}
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            {error}
-          </div>
-        )}
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import toast from "react-hot-toast";
 import {
   getStudents,
   getAttendance,
@@ -24,6 +25,7 @@ export default function AttendanceManagement() {
       setStudents(data || []);
     } catch (error) {
       console.error("Error fetching students:", error);
+      toast.error("Failed to load students");
     }
   };
 
@@ -33,6 +35,7 @@ export default function AttendanceManagement() {
       setAttendance(data || []);
     } catch (error) {
       console.error("Error fetching attendance:", error);
+      toast.error("Failed to load attendance data");
       setAttendance([]);
     } finally {
       setLoading(false);
@@ -48,10 +51,11 @@ export default function AttendanceManagement() {
         checkIn: status === "present" ? new Date().toISOString() : null,
       });
 
+      toast.success(`Attendance marked as ${status}`);
       fetchAttendance(); // refresh
     } catch (error) {
       console.error("Error marking attendance:", error);
-      alert("Error marking attendance: " + (error.message || "Unknown error"));
+      toast.error(error.response?.data?.message || "Failed to mark attendance");
     }
   };
 

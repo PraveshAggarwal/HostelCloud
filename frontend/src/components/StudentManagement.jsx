@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
+import toast from "react-hot-toast";
 import { getStudents, createStudent, deleteStudent } from "../lib/api";
 export default function StudentManagement() {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState(null);
   const [newStudent, setNewStudent] = useState({
     rollNo: "",
     name: "",
@@ -51,8 +53,10 @@ export default function StudentManagement() {
       });
       setShowAddForm(false);
       fetchStudents();
+      toast.success("Student added successfully!");
     } catch (error) {
       console.error("Error adding student:", error);
+      toast.error("Failed to add student. Please try again.");
     }
   };
 
@@ -61,8 +65,10 @@ export default function StudentManagement() {
       try {
         await deleteStudent(id);
         fetchStudents();
+        toast.success("Student deleted successfully!");
       } catch (error) {
         console.error("Error deleting student:", error);
+        toast.error("Failed to delete student. Please try again.");
       }
     }
   };
@@ -105,6 +111,71 @@ export default function StudentManagement() {
           Add New Student
         </button>
       </div>
+
+      {/* View Student Details Modal */}
+      {selectedStudent && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-semibold">Student Details</h3>
+              <button
+                onClick={() => setSelectedStudent(null)}
+                className="text-gray-500 hover:text-gray-700 text-2xl"
+              >
+                ×
+              </button>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                <p className="text-gray-900 bg-gray-50 p-2 rounded">{selectedStudent.name}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Roll Number</label>
+                <p className="text-gray-900 bg-gray-50 p-2 rounded">{selectedStudent.rollNo}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <p className="text-gray-900 bg-gray-50 p-2 rounded">{selectedStudent.email}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                <p className="text-gray-900 bg-gray-50 p-2 rounded">{selectedStudent.phone}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Room Number</label>
+                <p className="text-gray-900 bg-gray-50 p-2 rounded">{selectedStudent.roomNo}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Batch</label>
+                <p className="text-gray-900 bg-gray-50 p-2 rounded">{selectedStudent.batch}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Parent Name</label>
+                <p className="text-gray-900 bg-gray-50 p-2 rounded">{selectedStudent.parentName}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Parent Contact</label>
+                <p className="text-gray-900 bg-gray-50 p-2 rounded">{selectedStudent.parentContact}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Mother Name</label>
+                <p className="text-gray-900 bg-gray-50 p-2 rounded">{selectedStudent.motherName}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Mother Contact</label>
+                <p className="text-gray-900 bg-gray-50 p-2 rounded">{selectedStudent.motherContact}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Joining Date</label>
+                <p className="text-gray-900 bg-gray-50 p-2 rounded">
+                  {new Date(selectedStudent.joiningDate).toLocaleDateString()}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Add Student Modal */}
       {showAddForm && (
@@ -282,12 +353,20 @@ export default function StudentManagement() {
                   <div className="text-gray-600">{student.batch}</div>
                 </td>
                 <td className="py-3 px-4">
-                  <button
-                    onClick={() => handleDeleteStudent(student._id)}
-                    className="btn btn-sm bg-red-500 hover:bg-red-600 text-white border-none rounded-lg w-10 h-10 p-0"
-                  >
-                    🗑️
-                  </button>
+                  <div className="flex gap-2 items-center">
+                    <button
+                      onClick={() => setSelectedStudent(student)}
+                      className="btn btn-sm bg-blue-500 hover:bg-blue-600 text-white border-none rounded-lg px-3 h-8 min-w-[60px] flex items-center justify-center"
+                    >
+                      View
+                    </button>
+                    <button
+                      onClick={() => handleDeleteStudent(student._id)}
+                      className="btn btn-sm bg-red-500 hover:bg-red-500 text-white border-none rounded-lg h-8 w-8 flex items-center justify-center"
+                    >
+                      🗑️
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}

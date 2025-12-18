@@ -44,6 +44,9 @@ const LeaveManagement = () => {
                 Student
               </th>
               <th className="text-left py-3 px-4 text-gray-600 font-semibold">
+                Room No
+              </th>
+              <th className="text-left py-3 px-4 text-gray-600 font-semibold">
                 From Date
               </th>
               <th className="text-left py-3 px-4 text-gray-600 font-semibold">
@@ -69,6 +72,11 @@ const LeaveManagement = () => {
                 <td className="py-3 px-4">
                   <div className="text-gray-700">
                     {leave.studentId?.name || "Unknown"}
+                  </div>
+                </td>
+                <td className="py-3 px-4">
+                  <div className="text-gray-700">
+                    {leave.studentId?.roomNo || "N/A"}
                   </div>
                 </td>
                 <td className="py-3 px-4">

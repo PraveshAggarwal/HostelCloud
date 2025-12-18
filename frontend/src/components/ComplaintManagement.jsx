@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import toast from "react-hot-toast";
 import { getComplaints, updateComplaintStatus } from "../lib/api";
 export default function ComplaintManagement() {
   const [complaints, setComplaints] = useState([]);
@@ -14,6 +15,7 @@ export default function ComplaintManagement() {
       setComplaints(response.data || []);
     } catch (error) {
       console.error("Error fetching complaints:", error);
+      toast.error("Failed to load complaints");
     } finally {
       setLoading(false);
     }
@@ -22,9 +24,11 @@ export default function ComplaintManagement() {
   const UpdateComplaintStatus = async (id, status) => {
     try {
       await updateComplaintStatus(id, status);
+      toast.success(`Complaint status updated to ${status}`);
       fetchComplaints();
     } catch (error) {
       console.error("Error updating complaint status:", error);
+      toast.error("Failed to update complaint status");
     }
   };
 
@@ -42,6 +46,9 @@ export default function ComplaintManagement() {
             <tr className="border-b border-gray-200">
               <th className="text-left py-3 px-4 text-gray-600 font-semibold">
                 Student
+              </th>
+              <th className="text-left py-3 px-4 text-gray-600 font-semibold">
+                Room No
               </th>
               <th className="text-left py-3 px-4 text-gray-600 font-semibold">
                 Title
@@ -66,6 +73,11 @@ export default function ComplaintManagement() {
                 <td className="py-3 px-4">
                   <div className="text-gray-700">
                     {complaint.studentId?.name || "Unknown"}
+                  </div>
+                </td>
+                <td className="py-3 px-4">
+                  <div className="text-gray-700">
+                    {complaint.studentId?.roomNo || "N/A"}
                   </div>
                 </td>
                 <td className="py-3 px-4">

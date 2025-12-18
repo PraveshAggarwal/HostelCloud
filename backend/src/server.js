@@ -27,8 +27,6 @@ app.use(
   })
 );
 
-// app.use(cors(corsOptions));
-
 app.use(express.json());
 app.use(cookieParser());
 
@@ -44,7 +42,7 @@ app.use("/api/notices", noticeRoutes);
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../frontend/dist")));
 
-  app.get("(.*)", (req, res) => {
+  app.get("*", (req, res) => {
     res.sendFile(path.join(__dirname, "../frontend", "dist", "index.html"));
   });
 }
@@ -53,17 +51,3 @@ app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
   connectDB();
 });
-
-// import path from "path";
-// import { fileURLToPath } from "url";
-
-// const __filename = fileURLToPath(import.meta.url);
-// const __dirname = path.dirname(__filename);
-
-// // Serve frontend build
-// app.use(express.static(path.join(__dirname, "../frontend/dist"))); // or build
-
-// // ⚠️ THIS IS THE FIX
-// app.get("*", (req, res) => {
-//   res.sendFile(path.join(__dirname, "../frontend/dist/index.html"));
-// });
